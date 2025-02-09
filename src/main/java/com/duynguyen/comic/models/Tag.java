@@ -3,7 +3,7 @@ package com.duynguyen.comic.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "`Tags`")
+@Table(name = "tags")
 public class Tag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

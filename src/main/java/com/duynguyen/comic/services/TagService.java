@@ -14,7 +14,8 @@ import java.util.List;
 public class TagService {
     private final TagRepository tagRepository;
     public List<Tag> findAll() {
-        return tagRepository.findAll();
+        List<Tag> tags = tagRepository.findAll();
+        return tags;
     }
 
     @Transactional(readOnly = false)

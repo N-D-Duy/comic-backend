@@ -3,7 +3,6 @@ package com.duynguyen.comic.controllers;
 import com.duynguyen.comic.models.Tag;
 import com.duynguyen.comic.services.TagService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/tags")
-
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Tag Controller", description = "APIs for managing tags")
 public class TagController {
     private final TagService tagService;
 
