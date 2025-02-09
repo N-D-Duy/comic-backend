@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: comic
+
+  datasource:
+    master:
+      jdbc-url: ${MASTER_DB_URL}
+      username: ${MASTER_DB_USER}
+      password: ${MASTER_DB_PASS}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        pool-name: MasterHikariPool
+        maximum-pool-size: 10
+        minimum-idle: 5
+        idle-timeout: 30000
+        connection-timeout: 20000
+        max-lifetime: 1800000
+        auto-commit: true
+        data-source-properties:
+          cachePrepStmts: true
+          prepStmtCacheSize: 250
+          prepStmtCacheSqlLimit: 2048
+          useServerPrepStmts: true
+
+    slave:
+      jdbc-url: ${SLAVE_DB_URL}
+      username: ${SLAVE_DB_USER}
+      password: ${SLAVE_DB_PASS}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        pool-name: SlaveHikariPool
+        maximum-pool-size: 20
+        minimum-idle: 5
+        idle-timeout: 30000
+        connection-timeout: 20000
+        max-lifetime: 1800000
+        auto-commit: true
+        data-source-properties:
+          cachePrepStmts: true
+          prepStmtCacheSize: 250
+          prepStmtCacheSqlLimit: 2048
+          useServerPrepStmts: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 25
+          fetch_size: 25
+        order_inserts: true
+        order_updates: true
+        connection:
+          provider_disables_autocommit: false
+
+logging:
+  level:
+    org.springframework: INFO
+    com.comic: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

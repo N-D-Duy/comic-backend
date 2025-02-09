@@ -1,9 +1,9 @@
 -- Thiết lập database
-CREATE DATABASE IF NOT EXISTS comics_db
+CREATE DATABASE IF NOT EXISTS comics_master
   CHARACTER SET = 'utf8mb4'
   COLLATE = 'utf8mb4_unicode_ci';
 
-USE comics_db;
+USE comics_master;
 
 SET time_zone = '+07:00';
 
@@ -110,6 +110,22 @@ CREATE TABLE Chapters
     INDEX         idx_chapter_created (CreatedAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- 13. Badges
+CREATE TABLE Badges
+(
+    Id           BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    Name         VARCHAR(50) NOT NULL UNIQUE,
+    Description  TEXT,
+    IconUrl      VARCHAR(500),
+    EffectClass  VARCHAR(100), -- CSS class cho hiệu ứng
+    Type         ENUM('achievement', 'purchase', 'special') NOT NULL,
+    Requirements JSON,         -- Điều kiện để đạt được (ví dụ: {uploadedComics: 10})
+    CreatedAt    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX        idx_badge_type (Type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 8. Users
 CREATE TABLE Users
 (
@@ -185,21 +201,6 @@ CREATE TABLE Settings
     UpdatedAt           TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
     UNIQUE KEY user_settings (UserId)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 13. Badges
-CREATE TABLE Badges
-(
-    Id           BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    Name         VARCHAR(50) NOT NULL UNIQUE,
-    Description  TEXT,
-    IconUrl      VARCHAR(500),
-    EffectClass  VARCHAR(100), -- CSS class cho hiệu ứng
-    Type         ENUM('achievement', 'purchase', 'special') NOT NULL,
-    Requirements JSON,         -- Điều kiện để đạt được (ví dụ: {uploadedComics: 10})
-    CreatedAt    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX        idx_badge_type (Type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 14. Bảng User_Badges (Người dùng - Danh hiệu)
