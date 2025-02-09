@@ -1,267 +1,265 @@
 -- Thiết lập database
-CREATE DATABASE IF NOT EXISTS comics_master
+CREATE DATABASE IF NOT EXISTS comics_slave
   CHARACTER SET = 'utf8mb4'
   COLLATE = 'utf8mb4_unicode_ci';
 
-USE comics_master;
+USE comics_slave;
 
 SET time_zone = '+07:00';
 
 -- 1. Categories
-CREATE TABLE Categories
+CREATE TABLE categories
 (
-    Id          BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    Name        VARCHAR(50) NOT NULL UNIQUE,
-    Slug        VARCHAR(50) NOT NULL UNIQUE,
-    Description TEXT,
-    CreatedAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX       idx_category_slug (Slug)
+    id          BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    name        VARCHAR(50) NOT NULL UNIQUE,
+    slug        VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX       idx_category_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. Authors
-CREATE TABLE Authors
+CREATE TABLE authors
 (
-    Id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    Name      VARCHAR(100) NOT NULL,
-    Slug      VARCHAR(100) NOT NULL UNIQUE,
-    Biography TEXT,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX     idx_author_name (Name),
-    INDEX     idx_author_slug (Slug),
-    FULLTEXT  INDEX ftx_author_name_bio (Name, Biography)
+    id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    name      VARCHAR(100) NOT NULL,
+    slug      VARCHAR(100) NOT NULL UNIQUE,
+    biography TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX     idx_author_name (name),
+    INDEX     idx_author_slug (slug),
+    FULLTEXT  INDEX ftx_author_name_bio (name, biography)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. Comics
-CREATE TABLE Comics
+CREATE TABLE comics
 (
-    Id                BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    Title             VARCHAR(255) NOT NULL,
-    Slug              VARCHAR(255) NOT NULL UNIQUE,
-    AlternativeTitles JSON,
-    Description       TEXT,
-    CoverImageUrl     VARCHAR(500),
-    Status            ENUM('ongoing', 'completed', 'dropped') NOT NULL,
-    ViewCount         BIGINT UNSIGNED DEFAULT 0,
-    Rating            DECIMAL(3, 2) DEFAULT 0.00,
-    TotalChapters     INT UNSIGNED DEFAULT 0,
-    CategoryId        BIGINT UNSIGNED,
-    CreatedAt         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (CategoryId) REFERENCES Categories (Id) ON DELETE SET NULL,
-    INDEX             idx_comic_status (Status),
-    INDEX             idx_comic_views (ViewCount),
-    INDEX             idx_comic_rating (Rating),
-    INDEX             idx_comic_slug (Slug),
-    FULLTEXT          INDEX ftx_comic_title_desc (Title, Description)
+    id                BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    title             VARCHAR(255) NOT NULL,
+    slug              VARCHAR(255) NOT NULL UNIQUE,
+    alternative_titles JSON,
+    description       TEXT,
+    cover_image_url   VARCHAR(500),
+    status            ENUM('ongoing', 'completed', 'dropped') NOT NULL,
+    view_count        BIGINT UNSIGNED DEFAULT 0,
+    rating            DECIMAL(3, 2) DEFAULT 0.00,
+    total_chapters    INT UNSIGNED DEFAULT 0,
+    category_id       BIGINT UNSIGNED,
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL,
+    INDEX             idx_comic_status (status),
+    INDEX             idx_comic_views (view_count),
+    INDEX             idx_comic_rating (rating),
+    INDEX             idx_comic_slug (slug),
+    FULLTEXT          INDEX ftx_comic_title_desc (title, description)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. Comics_Authors (quan hệ nhiều-nhiều)
-CREATE TABLE Comics_Authors
+CREATE TABLE comics_authors
 (
-    ComicId  BIGINT UNSIGNED,
-    AuthorId BIGINT UNSIGNED,
-    Role     ENUM('author', 'artist', 'translator') NOT NULL,
-    PRIMARY KEY (ComicId, AuthorId, Role),
-    FOREIGN KEY (ComicId) REFERENCES Comics (Id) ON DELETE CASCADE,
-    FOREIGN KEY (AuthorId) REFERENCES Authors (Id) ON DELETE CASCADE,
-    INDEX    idx_comic_authors (ComicId, AuthorId)
+    comic_id  BIGINT UNSIGNED,
+    author_id BIGINT UNSIGNED,
+    role      ENUM('author', 'artist', 'translator') NOT NULL,
+    PRIMARY KEY (comic_id, author_id, role),
+    FOREIGN KEY (comic_id) REFERENCES comics (id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id) REFERENCES authors (id) ON DELETE CASCADE,
+    INDEX    idx_comic_authors (comic_id, author_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. Tags
-CREATE TABLE Tags
+CREATE TABLE tags
 (
-    Id          BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    Name        VARCHAR(50) NOT NULL UNIQUE,
-    Slug        VARCHAR(50) NOT NULL UNIQUE,
-    Description VARCHAR(255),
-    CreatedAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX       idx_tag_slug (Slug)
+    id          BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    name        VARCHAR(50) NOT NULL UNIQUE,
+    slug        VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX       idx_tag_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. Comics_Tags (quan hệ nhiều-nhiều)
-CREATE TABLE Comics_Tags
+CREATE TABLE comics_tags
 (
-    ComicId BIGINT UNSIGNED,
-    TagId   BIGINT UNSIGNED,
-    PRIMARY KEY (ComicId, TagId),
-    FOREIGN KEY (ComicId) REFERENCES Comics (Id) ON DELETE CASCADE,
-    FOREIGN KEY (TagId) REFERENCES Tags (Id) ON DELETE CASCADE,
-    INDEX   idx_comic_tags (ComicId, TagId)
+    comic_id BIGINT UNSIGNED,
+    tag_id   BIGINT UNSIGNED,
+    PRIMARY KEY (comic_id, tag_id),
+    FOREIGN KEY (comic_id) REFERENCES comics (id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE,
+    INDEX   idx_comic_tags (comic_id, tag_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 7. Chapters
-CREATE TABLE Chapters
+CREATE TABLE chapters
 (
-    Id            BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    ComicId       BIGINT UNSIGNED NOT NULL,
-    ChapterNumber DECIMAL(10, 2) NOT NULL,
-    Title         VARCHAR(255),
-    ViewCount     BIGINT UNSIGNED DEFAULT 0,
-    ImageUrls     JSON           NOT NULL,
-    HTMLContent   MEDIUMTEXT,
-    PageCount     INT UNSIGNED NOT NULL,
-    CreatedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (ComicId) REFERENCES Comics (Id) ON DELETE CASCADE,
-    UNIQUE KEY comic_chapter (ComicId, ChapterNumber),
-    INDEX         idx_chapter_views (ViewCount),
-    INDEX         idx_chapter_created (CreatedAt)
+    id            BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    comic_id      BIGINT UNSIGNED NOT NULL,
+    chapter_number DECIMAL(10, 2) NOT NULL,
+    title         VARCHAR(255),
+    view_count    BIGINT UNSIGNED DEFAULT 0,
+    image_urls    JSON           NOT NULL,
+    html_content  MEDIUMTEXT,
+    page_count    INT UNSIGNED NOT NULL,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (comic_id) REFERENCES comics (id) ON DELETE CASCADE,
+    UNIQUE KEY comic_chapter (comic_id, chapter_number),
+    INDEX         idx_chapter_views (view_count),
+    INDEX         idx_chapter_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- 13. Badges
-CREATE TABLE Badges
+CREATE TABLE badges
 (
-    Id           BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    Name         VARCHAR(50) NOT NULL UNIQUE,
-    Description  TEXT,
-    IconUrl      VARCHAR(500),
-    EffectClass  VARCHAR(100), -- CSS class cho hiệu ứng
-    Type         ENUM('achievement', 'purchase', 'special') NOT NULL,
-    Requirements JSON,         -- Điều kiện để đạt được (ví dụ: {uploadedComics: 10})
-    CreatedAt    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX        idx_badge_type (Type)
+    id           BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    name         VARCHAR(50) NOT NULL UNIQUE,
+    description  TEXT,
+    icon_url     VARCHAR(500),
+    effect_class VARCHAR(100), -- CSS class cho hiệu ứng
+    type         ENUM('achievement', 'purchase', 'special') NOT NULL,
+    requirements JSON,         -- Điều kiện để đạt được (ví dụ: {uploadedComics: 10})
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX        idx_badge_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. Users
-CREATE TABLE Users
+CREATE TABLE users
 (
-    Id          BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    Username    VARCHAR(50)  NOT NULL UNIQUE,
-    Email       VARCHAR(255) NOT NULL UNIQUE,
-    Password    VARCHAR(255) NOT NULL,
-    Role        ENUM('user', 'moderator', 'admin') DEFAULT 'user',
-    IsActive    TINYINT(1) DEFAULT 1,
-    LastLoginAt TIMESTAMP NULL,
-    Points BIGINT UNSIGNED DEFAULT 0,
-    ActiveBadgeId BIGINT UNSIGNED,
-    CreatedAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX       idx_user_email (Email),
-    INDEX       idx_user_status (IsActive),
-    FOREIGN KEY (ActiveBadgeId) REFERENCES Badges(Id) ON DELETE SET NULL
+    id            BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    username      VARCHAR(50)  NOT NULL UNIQUE,
+    email         VARCHAR(255) NOT NULL UNIQUE,
+    password      VARCHAR(255) NOT NULL,
+    role          ENUM('user', 'moderator', 'admin') DEFAULT 'user',
+    is_active     TINYINT(1) DEFAULT 1,
+    last_login_at TIMESTAMP NULL,
+    points        BIGINT UNSIGNED DEFAULT 0,
+    active_badge_id BIGINT UNSIGNED,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX         idx_user_email (email),
+    INDEX         idx_user_status (is_active),
+    FOREIGN KEY (active_badge_id) REFERENCES badges(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9. Reviews
-CREATE TABLE Reviews
+CREATE TABLE reviews
 (
-    Id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    UserId    BIGINT UNSIGNED NOT NULL,
-    ComicId   BIGINT UNSIGNED NOT NULL,
-    Rating    TINYINT NOT NULL CHECK (Rating BETWEEN 1 AND 5),
-    Comment   TEXT,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    FOREIGN KEY (ComicId) REFERENCES Comics (Id) ON DELETE CASCADE,
-    UNIQUE KEY user_comic_review (UserId, ComicId),
-    INDEX     idx_review_rating (Rating)
+    id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id   BIGINT UNSIGNED NOT NULL,
+    comic_id  BIGINT UNSIGNED NOT NULL,
+    rating    TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment   TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (comic_id) REFERENCES comics (id) ON DELETE CASCADE,
+    UNIQUE KEY user_comic_review (user_id, comic_id),
+    INDEX     idx_review_rating (rating)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 10. ReadingHistory
-CREATE TABLE ReadingHistory
+CREATE TABLE reading_history
 (
-    Id         BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    UserId     BIGINT UNSIGNED NOT NULL,
-    ComicId    BIGINT UNSIGNED NOT NULL,
-    ChapterId  BIGINT UNSIGNED NOT NULL,
-    ReadPage   INT UNSIGNED DEFAULT 1,
-    LastReadAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    FOREIGN KEY (ComicId) REFERENCES Comics (Id) ON DELETE CASCADE,
-    FOREIGN KEY (ChapterId) REFERENCES Chapters (Id) ON DELETE CASCADE,
-    UNIQUE KEY user_comic_chapter (UserId, ComicId, ChapterId),
-    INDEX      idx_reading_last_read (LastReadAt)
+    id         BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT UNSIGNED NOT NULL,
+    comic_id   BIGINT UNSIGNED NOT NULL,
+    chapter_id BIGINT UNSIGNED NOT NULL,
+    read_page  INT UNSIGNED DEFAULT 1,
+    last_read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (comic_id) REFERENCES comics (id) ON DELETE CASCADE,
+    FOREIGN KEY (chapter_id) REFERENCES chapters (id) ON DELETE CASCADE,
+    UNIQUE KEY user_comic_chapter (user_id, comic_id, chapter_id),
+    INDEX      idx_reading_last_read (last_read_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 11. Favorites
-CREATE TABLE Favorites
+CREATE TABLE favorites
 (
-    Id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    UserId    BIGINT UNSIGNED NOT NULL,
-    ComicId   BIGINT UNSIGNED NOT NULL,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    FOREIGN KEY (ComicId) REFERENCES Comics (Id) ON DELETE CASCADE,
-    UNIQUE KEY user_comic_favorite (UserId, ComicId),
-    INDEX     idx_favorite_created (CreatedAt)
+    id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id   BIGINT UNSIGNED NOT NULL,
+    comic_id  BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (comic_id) REFERENCES comics (id) ON DELETE CASCADE,
+    UNIQUE KEY user_comic_favorite (user_id, comic_id),
+    INDEX     idx_favorite_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 12. Settings
-CREATE TABLE Settings
+CREATE TABLE settings
 (
-    Id                  BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    UserId              BIGINT UNSIGNED NOT NULL,
-    NotificationEnabled TINYINT(1) DEFAULT 1,
-    Theme               VARCHAR(20) DEFAULT 'light',
-    CreatedAt           TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt           TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    UNIQUE KEY user_settings (UserId)
+    id                  BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id             BIGINT UNSIGNED NOT NULL,
+    notification_enabled TINYINT(1) DEFAULT 1,
+    theme               VARCHAR(20) DEFAULT 'light',
+    created_at          TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE KEY user_settings (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 14. Bảng User_Badges (Người dùng - Danh hiệu)
-CREATE TABLE User_Badges
+CREATE TABLE user_badges
 (
-    Id         BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    UserId     BIGINT UNSIGNED NOT NULL,
-    BadgeId    BIGINT UNSIGNED NOT NULL,
-    IsActive   TINYINT(1) DEFAULT 1, -- Badge đang được hiển thị
-    AcquiredAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    FOREIGN KEY (BadgeId) REFERENCES Badges (Id) ON DELETE CASCADE,
-    UNIQUE KEY user_badge (UserId, BadgeId),
-    INDEX      idx_badge_active (IsActive)
+    id         BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT UNSIGNED NOT NULL,
+    badge_id   BIGINT UNSIGNED NOT NULL,
+    is_active  TINYINT(1) DEFAULT 1, -- Badge đang được hiển thị
+    acquired_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (badge_id) REFERENCES badges (id) ON DELETE CASCADE,
+    UNIQUE KEY user_badge (user_id, badge_id),
+    INDEX      idx_badge_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 15. Bảng ComicSubmissions (Yêu cầu đăng truyện)
-CREATE TABLE ComicSubmissions
+CREATE TABLE comic_submissions
 (
-    Id            BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    UserId        BIGINT UNSIGNED NOT NULL,
-    Title         VARCHAR(255) NOT NULL,
-    Description   TEXT,
-    CoverImageUrl VARCHAR(500),
-    CategoryId    BIGINT UNSIGNED,
-    Status        ENUM('pending', 'approved', 'rejected', 'revision_required') DEFAULT 'pending',
-    ModeratorId   BIGINT UNSIGNED, -- Mod xử lý submission
-    ModeratorNote TEXT,            -- Ghi chú của mod
-    CreatedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    FOREIGN KEY (CategoryId) REFERENCES Categories (Id) ON DELETE SET NULL,
-    FOREIGN KEY (ModeratorId) REFERENCES Users (Id) ON DELETE SET NULL,
-    INDEX         idx_submission_status (Status),
-    INDEX         idx_submission_user (UserId)
+    id            BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id       BIGINT UNSIGNED NOT NULL,
+    title         VARCHAR(255) NOT NULL,
+    description   TEXT,
+    cover_image_url VARCHAR(500),
+    category_id   BIGINT UNSIGNED,
+    status        ENUM('pending', 'approved', 'rejected', 'revision_required') DEFAULT 'pending',
+    moderator_id  BIGINT UNSIGNED, -- Mod xử lý submission
+    moderator_note TEXT,            -- Ghi chú của mod
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL,
+    FOREIGN KEY (moderator_id) REFERENCES users (id) ON DELETE SET NULL,
+    INDEX         idx_submission_status (status),
+    INDEX         idx_submission_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 16. Bảng SubmissionComments (Comments cho yêu cầu đăng truyện)
-CREATE TABLE SubmissionComments
+CREATE TABLE submission_comments
 (
-    Id           BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    SubmissionId BIGINT UNSIGNED NOT NULL,
-    UserId       BIGINT UNSIGNED NOT NULL,
-    Comment      TEXT NOT NULL,
-    CreatedAt    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (SubmissionId) REFERENCES ComicSubmissions (Id) ON DELETE CASCADE,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    INDEX        idx_submission_comments (SubmissionId)
+    id           BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    submission_id BIGINT UNSIGNED NOT NULL,
+    user_id       BIGINT UNSIGNED NOT NULL,
+    comment      TEXT NOT NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (submission_id) REFERENCES comic_submissions (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    INDEX        idx_submission_comments (submission_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 17. Bảng để lưu thông tin người upload truyện
-CREATE TABLE ComicUploaders
+CREATE TABLE comic_uploaders
 (
-    ComicId   BIGINT UNSIGNED,
-    UserId    BIGINT UNSIGNED,
-    Role      ENUM('owner', 'collaborator') DEFAULT 'owner',
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (ComicId, UserId),
-    FOREIGN KEY (ComicId) REFERENCES Comics (Id) ON DELETE CASCADE,
-    FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    INDEX     idx_comic_uploaders (ComicId, UserId)
+    comic_id   BIGINT UNSIGNED,
+    user_id    BIGINT UNSIGNED,
+    role       ENUM('owner', 'collaborator') DEFAULT 'owner',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (comic_id, user_id),
+    FOREIGN KEY (comic_id) REFERENCES comics (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    INDEX     idx_comic_uploaders (comic_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
