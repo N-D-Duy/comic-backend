@@ -18,7 +18,7 @@ public class TagService {
     }
 
     @Transactional(readOnly = false)
-    public Tag addTag(Tag tag) {
-        return tagRepository.save(tag);
+    public void addTag(Tag tag) {
+        tagRepository.save(tag);
     }
 }
